@@ -1,0 +1,154 @@
+#! C:/Program Files/Nuke11.3v5/nuke-11.3.5.dll -nx
+version 11.3 v5
+Gizmo {
+ inputs 0
+ addUserKnob {20 G_Ripple_V1}
+ addUserKnob {41 format l "map format" t "Set the resolution for ripple map." T Constant7.format}
+ addUserKnob {26 ripple_settings l "ripple settings"}
+ addUserKnob {41 ripple_center l "ripple center" t "Specify the center for the generation of ripple." T Ripple_Wave_Function1.ripple_center}
+ addUserKnob {41 wave_count l "wave count" T Ripple_Wave_Function1.wave_count}
+ addUserKnob {41 amplitude T Ripple_Wave_Function1.amplitude}
+ addUserKnob {41 wavelength T Ripple_Wave_Function1.wavelength}
+ addUserKnob {41 center_height l "center height" T Ripple_Wave_Function1.center_height}
+ addUserKnob {41 falloff l "wave falloff" T Ripple_Wave_Function1.falloff}
+ addUserKnob {41 spread T spread_control_map3.spread}
+ addUserKnob {41 start_frame l "dissipation start frame" T spread_control_map2.start_frame}
+ addUserKnob {41 dissolve_speed l "dissipation speed" T spread_control_map2.dissolve_speed}
+ addUserKnob {41 clamp l clamp_negative T Ripple_Wave_Function1.clamp}
+ addUserKnob {26 credit l "" +STARTLINE}
+ addUserKnob {26 credit_line l credit: T "Tool developed by:\nGaurav Jaiswal\nDigital Compositor"}
+ addUserKnob {22 gaurav_jaiswal l "Gaurav Jaiswal" T "import webbrowser\nwebbrowser.open('https://gauravjaiswalvfx.wixsite.com/myportfolio')" +STARTLINE}
+}
+ Constant {
+  inputs 0
+  channels rgb
+  name Constant7
+  xpos 509
+  ypos -493
+ }
+ Dot {
+  name Dot14
+  xpos 543
+  ypos -396
+ }
+set N2a379c00 [stack 0]
+ Dot {
+  name Dot15
+  xpos 414
+  ypos -396
+ }
+set N2a379800 [stack 0]
+ Expression {
+  temp_name0 c_x
+  temp_expr0 Ripple_Wave_Function1.ripple_center.x
+  temp_name1 c_y
+  temp_expr1 Ripple_Wave_Function1.ripple_center.y
+  temp_name2 d
+  temp_expr2 hypot(c_x,c_y)
+  temp_name3 s
+  temp_expr3 (hypot(x-c_x+0.5,y-c_y+0.5))/d
+  expr0 this.spread==0?0:(1-s)+(this.spread)
+  name spread_control_map2
+  selected true
+  xpos 380
+  ypos -178
+  addUserKnob {20 User}
+  addUserKnob {7 spread R -0.5 1}
+  spread {{spread_invert}}
+  addUserKnob {7 spread_invert}
+  spread_invert {{ceil(frame-this.start_frame)<0?0:ceil(frame-this.start_frame)/10*this.dissolve_speed}}
+  addUserKnob {7 start_frame l "dissolve start frame" t "Determine the frame from which you want the ripple to dissipate."}
+  start_frame 11
+  addUserKnob {7 dissolve_speed l "dissolve speed" t "Determine the speed with which you want the ripple to dissipate."}
+  dissolve_speed 0.25
+ }
+ Grade {
+  gamma 0.1
+  name Grade4
+  xpos 380
+  ypos -149
+ }
+ Invert {
+  channels {rgba.red -rgba.green -rgba.blue none}
+  name Invert2
+  xpos 380
+  ypos -123
+ }
+ Clamp {
+  name Clamp2
+  xpos 380
+  ypos -92
+ }
+push $N2a379800
+ Expression {
+  temp_name0 c_x
+  temp_expr0 Ripple_Wave_Function1.ripple_center.x
+  temp_name1 c_y
+  temp_expr1 Ripple_Wave_Function1.ripple_center.y
+  temp_name2 d
+  temp_expr2 hypot(c_x,c_y)
+  temp_name3 s
+  temp_expr3 (hypot(x-c_x+0.5,y-c_y+0.5))/d
+  expr0 (1-s)+(this.spread)
+  name spread_control_map3
+  xpos 380
+  ypos -235
+  addUserKnob {20 User}
+  addUserKnob {7 spread t "Control the area upto which you want the ripple to grow." R -0.5 1}
+  spread 0.5
+  addUserKnob {7 spread_invert}
+  spread_invert 1
+ }
+push $N2a379c00
+ Expression {
+  temp_name0 a
+  temp_expr0 "(this.wave_count_multiplier*hypot(x+this.threshold-this.ripple_center.x,y+this.threshold-this.ripple_center.y) - (7*(frame)))"
+  temp_name1 b
+  temp_expr1 (pow2(x+this.threshold-this.ripple_center.x)+pow2(y+this.threshold-this.ripple_center.y))
+  temp_name2 c
+  temp_expr2 this.falloff*b+(35000/this.center_height)+(1*frame)
+  temp_name3 z
+  temp_expr3 (cos(a/this.wavelength)/c)*this.amplitude*20000
+  expr0 "this.clamp == 1 ? clamp(z,0,100000) : z"
+  name Ripple_Wave_Function1
+  xpos 510
+  ypos -322
+  addUserKnob {20 User}
+  addUserKnob {12 ripple_center l "ripple center" t "Specify the center for the generation of ripple."}
+  ripple_center {1024 1024}
+  addUserKnob {3 wave_count l "wave count" t "Increase or decrease the number of waves to be generated."}
+  wave_count 3
+  addUserKnob {7 wave_count_multiplier}
+  wave_count_multiplier {{Ripple_Wave_Function1.wave_count/100}}
+  addUserKnob {7 falloff l "wave falloff" t "Determine the falloff for the waves."}
+  falloff 0.5
+  addUserKnob {7 amplitude t "Adjust the amplitude of all the waves." R 1 10}
+  amplitude 5
+  addUserKnob {7 wavelength t "Recomended value is 1.0.\nKeep the wavelength always between 0.9 and 1.1.\nAnything above or below will change the speed and direction of the wave abruptly." R 0.9 1.1}
+  wavelength 1.05
+  addUserKnob {7 center_height l "center height" t "Adjust the height of center wave.\nNever make it zero." R 0.1 1}
+  center_height 0.5
+  addUserKnob {7 threshold R 0 0.5}
+  threshold 0.5
+  addUserKnob {6 clamp l clamp_negative t "Clamp the negative waves." +STARTLINE}
+ }
+ Merge2 {
+  inputs 2
+  operation multiply
+  name Merge15
+  xpos 509
+  ypos -235
+ }
+ Merge2 {
+  inputs 2
+  operation multiply
+  name Merge16
+  xpos 509
+  ypos -86
+ }
+ Output {
+  name Output1
+  xpos 509
+  ypos 14
+ }
+end_group
